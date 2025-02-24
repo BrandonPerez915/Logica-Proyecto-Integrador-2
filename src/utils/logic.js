@@ -84,11 +84,79 @@ export function updateBoard(e, currentCell, currentRow, inputObject, board, setC
   if(currentCell === inputObject['expression'].length) return
 
   const newBoard = [...board]
-
   newBoard[currentRow] = [...board[currentRow]]
-
   newBoard[currentRow][currentCell] = e.target.textContent
 
   setBoard(newBoard)
-  setCurrentCell((currentCell + 1))
+  setCurrentCell(currentCell + 1)
+}
+
+export function deleteChar(currentCell, currentRow, board, setCurrentCell, setBoard) {
+  if(currentCell === 0) return 
+
+  const newBoard = [...board]
+  let newCurrentCell = currentCell
+  newCurrentCell--
+
+  newBoard[currentRow] = [...board[currentRow]]
+
+  newBoard[currentRow][newCurrentCell] = ''
+
+  setCurrentCell(newCurrentCell)
+  setBoard(newBoard)
+}
+
+export function paintCells(board, currentRow, inputObject, setShowInitialConfig, setVariables, setInputObject, setBoard, setCurrentRow, setCurrentCell) {
+
+  const input = board[currentRow]
+  let occurrences = {}
+
+  for (let char of inputObject['expression']) {
+    occurrences[char] = (occurrences[char] || 0) + 1
+  }
+
+  for (let i = 0; i < input.length; i++) {
+    if (inputObject['expression'][i] === input[i]) { 
+      const currentCell = document.querySelector(`[class*='${currentRow}-${i}']`)
+      currentCell.classList.add('green-cell')
+      occurrences[input[i]]--
+    }
+  }
+
+  for (let i = 0; i < input.length; i++) {
+    if (inputObject['expression'][i] !== input[i] && occurrences[input[i]] > 0) {
+      const currentCell = document.querySelector(`[class*='${currentRow}-${i}']`)
+      currentCell.classList.add('yellow-cell')
+      occurrences[input[i]]--
+    }
+  }
+
+  setCurrentRow(currentRow + 1)
+  setCurrentCell(0)
+
+  if(board[currentRow].join('') === inputObject['expression']) {
+    setTimeout(function() {
+      alert('Ganaste');
+      setShowInitialConfig(true)
+      setVariables([])
+      setInputObject({})
+      setBoard([])
+      setCurrentRow(0)
+      setCurrentCell(0)
+      return 
+    }, 200);
+  }
+
+  if(currentRow === parseInt(inputObject['attempts']) - 1) {
+    setTimeout(function() {
+      alert('Perdiste');
+      setShowInitialConfig(true)
+      setVariables([])
+      setInputObject({})
+      setBoard([])
+      setCurrentRow(0)
+      setCurrentCell(0)
+      return 
+    }, 200);
+  }
 }

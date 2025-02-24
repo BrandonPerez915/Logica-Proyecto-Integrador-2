@@ -5,7 +5,7 @@ import { VariableValue } from "./components/VariableValue.jsx"
 
 import { useState, useEffect, useRef } from "react"
 
-import { getData, startTimer, detectVariables, resetForm, updateBoard } from "./utils/logic.js"
+import { getData, startTimer, detectVariables, resetForm, updateBoard, deleteChar, paintCells } from "./utils/logic.js"
 
 function App() {
   const [showInitialConfig, setShowInitialConfig] = useState(true)
@@ -17,53 +17,6 @@ function App() {
 
   const countdownRef = useRef(null)
 
-  const handleSubmit = (e) => {
-    getData(e, variables, setShowInitialConfig, setInputObject, setVariables)
-  }
-
-  const handleDelete = () => {
-    if(currentCell === 0) return 
-
-    const newBoard = [...board]
-    let newCurrentCell = currentCell
-    newCurrentCell--
-  
-    newBoard[currentRow] = [...board[currentRow]]
-  
-    newBoard[currentRow][newCurrentCell] = ''
-
-    setCurrentCell(newCurrentCell)
-    setBoard(newBoard)
-  }
-
-  const getResult = () => {
-    const input = board[currentRow]
-    let occurrences = {}
-
-    for (let char of inputObject['expression']) {
-      occurrences[char] = (occurrences[char] || 0) + 1
-    }
-
-    for (let i = 0; i < input.length; i++) {
-      if (inputObject['expression'][i] === input[i]) { 
-        const currentCell = document.querySelector(`[class*='${currentRow}-${i}']`)
-        currentCell.classList.add('green-cell')
-        occurrences[input[i]]--
-      }
-    }
-
-    for (let i = 0; i < input.length; i++) {
-      if (inputObject['expression'][i] !== input[i] && occurrences[input[i]] > 0) {
-        const currentCell = document.querySelector(`[class*='${currentRow}-${i}']`)
-        currentCell.classList.add('yellow-cell')
-        occurrences[input[i]]--
-      }
-    }
-
-    setCurrentRow(currentRow + 1)
-    setCurrentCell(0)
-  }
-
   useEffect(()=> {
     const newBoard = Array.from({ length: inputObject.attempts }, () =>
       Array.from({ length: inputObject.expression?.length || 0 }, () => '')
@@ -73,6 +26,10 @@ function App() {
     startTimer(inputObject, countdownRef, setShowInitialConfig, 
       setVariables, setInputObject, setBoard, setCurrentRow, setCurrentCell)
   }, [inputObject])
+
+  const handleSubmit = (e) => {
+    getData(e, variables, setShowInitialConfig, setInputObject, setVariables)
+  }
 
   return (
     <>
@@ -199,13 +156,13 @@ function App() {
                         currentRow, inputObject, board, setCurrentCell, setBoard) }>(</button>
               <button className='logic-button white' onClick={ (e) => updateBoard(e, currentCell, 
                         currentRow, inputObject, board, setCurrentCell, setBoard) }>)</button>
-              <button className="logic-button white delete" onClick={ handleDelete }>
+              <button className="logic-button white delete" onClick={ () => deleteChar(currentCell, currentRow, board, setCurrentCell, setBoard) }>
                 <span className="material-symbols-outlined">backspace</span>
               </button>
             </div>
             <LogicButtons color='white' clickFunction={ (e) => updateBoard(e, currentCell, 
                         currentRow, inputObject, board, setCurrentCell, setBoard) }/>
-            <Button color='green' clickFunction={ getResult }>Aceptar</Button>
+            <Button color='green' clickFunction={ () => paintCells(board, currentRow, inputObject, setShowInitialConfig, setVariables, setInputObject, setBoard, setCurrentRow, setCurrentCell) }>Aceptar</Button>
           </Card>
         </section>)
       }
